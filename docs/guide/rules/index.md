@@ -10,6 +10,7 @@ The rules come in groups, one assertion each. Every group can be used without th
 |---|---|---|
 | `assertPulseMviConventions()` | a desktop feature split into a host, contents, sections and components; states and messages; previews | [UI structure](/guide/rules/ui) |
 | `assertPulseMobileConventions()` | a mobile feature as one screen and one ViewModel; states and messages; previews | [UI structure](/guide/rules/ui#mobile) |
+| `assertPulseProductConventions()` | each product's features held to its own view layout, in an app on the desktop and on mobile | [Modules and Koin](/guide/rules/modules#desktop-and-mobile) |
 | `assertPulseDomainConventions()` | how a repository hands out its data, and what earns a use case its place | [Domain and data](/guide/rules/domain) |
 | `assertPulseModuleConventions()` | which module may depend on which, and the packages inside the domain, the data layer and the design system | [Modules and Koin](/guide/rules/modules) |
 | `assertPulseKoinConventions()` | where Koin modules are declared | [Modules and Koin](/guide/rules/modules#koin) |

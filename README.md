@@ -83,8 +83,11 @@ dependencies {
 ## The rules
 
 One test runs the rules over the whole project. Desktop apps call `assertPulseMviConventions()`,
-mobile apps `assertPulseMobileConventions()`, and the other groups are shared. Point your agent at it
-from `CLAUDE.md` or `AGENTS.md`, as
+mobile apps `assertPulseMobileConventions()`, and the other groups are shared. An app on both is two
+products under `desktop/` and `mobile/`, checked with `PulseModuleLayout.DesktopAndMobile` and
+`assertPulseProductConventions()`, as
+[Desktop and mobile](https://kaleidot725.github.io/PulsePlatform/guide/rules/modules#desktop-and-mobile)
+describes. Point your agent at the test from `CLAUDE.md` or `AGENTS.md`, as
 [Building with AI agents](https://kaleidot725.github.io/PulsePlatform/guide/ai-agents) describes.
 
 ```kotlin

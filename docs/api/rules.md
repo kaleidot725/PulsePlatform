@@ -156,6 +156,14 @@ fun KoScope.assertMobileFeaturePackagesHaveARole()
 
 Requires every file below the root of a mobile feature to be under a `section` or `component` package. Files under `build/generated` are skipped.
 
+## assertPulseProductConventions
+
+```kotlin
+fun KoScope.assertPulseProductConventions(layout: PulseModuleLayout = PulseModuleLayout.DesktopAndMobile)
+```
+
+Runs `assertPulseMviConventions` over the features of the desktop product and `assertPulseMobileConventions` over those of the mobile product, each product read from the layout. Apps, shared modules and features outside both products are not checked here; `assertAppsAndFeaturesBelongToAProduct` reports the last.
+
 ## assertPulseDomainConventions
 
 ```kotlin
@@ -217,6 +225,9 @@ Runs every module check below with the same layout. Dependencies are the modules
 | `assertDomainIsFrameworkFree(layout)` | the domain imports nothing from `androidx.compose`, `androidx.lifecycle`, `jp.kaleidot725.pulse.mvi`, `jp.kaleidot725.pulse.navigation` or `jp.kaleidot725.pulse.architecture` |
 | `assertDomainIsSplitIntoItsPackages(layout)` | every domain file is in a package with a `model`, `repository` or `usecase` segment |
 | `assertDataIsSplitIntoItsPackages(layout)` | every data file is in a package with a `repository`, `local` or `model` segment |
+| `assertAppsAndFeaturesBelongToAProduct(layout)` | when the layout has products, every app and feature is under the directory of one |
+| `assertProductsDoNotDependOnEachOther(layout)` | a module of one product imports nothing from a module of the other |
+| `assertSharedModulesDoNotDependOnAProduct(layout)` | a module outside both products imports from neither |
 | `assertDesignSystemIsSplitByKind(layout)` | every design system file is in a package below the one named after the module's directory, and none of its packages is a catch-all such as `component`, `widget`, `composable` or `common` |
 
 ## PulseModuleLayout
@@ -230,14 +241,19 @@ data class PulseModuleLayout(
     val sharedUi: List<String> = listOf("core/ui"),
     val support: List<String> = listOf("core/*"),
     val designSystem: List<String> = listOf("core/designsystem"),
+    val desktop: List<String> = emptyList(),
+    val mobile: List<String> = emptyList(),
 ) {
     companion object {
         val NowInAndroid: PulseModuleLayout
+        val DesktopAndMobile: PulseModuleLayout
     }
 }
 ```
 
 Maps module directories to layers. Each pattern is matched against the end of a module's directory, the one above `src`, with `*` standing for exactly one directory. Layers are tried in the order declared, so the first that claims a module wins. A trailing `api` or `impl` directory belongs to the feature above it. `NowInAndroid` is the default.
+
+`desktop` and `mobile` name the directories of two products. A module belongs to a product when one of its patterns matches the directory directly above the part a layer matched, as `desktop` does above `feature/music` in `desktop/feature/music`. A module under neither is shared, and with both lists empty the project has one product. `DesktopAndMobile` is `NowInAndroid` with `desktop = listOf("desktop")` and `mobile = listOf("mobile")`.
 
 ## pulseModule
 
@@ -245,7 +261,7 @@ Maps module directories to layers. Each pattern is matched against the end of a 
 fun KoFileDeclaration.pulseModule(layout: PulseModuleLayout = PulseModuleLayout.NowInAndroid): String?
 ```
 
-Names the module a file belongs to as the part of its directory a pattern matched — `core/data` or `feature/counter` — or returns null when no layer claims it.
+Names the module a file belongs to as the part of its directory a pattern matched — `core/data` or `feature/counter` — with its product's directory in front when it has one, as in `desktop/feature/counter`. Returns null when no layer claims it.
 
 ## assertPulseKoinConventions
 

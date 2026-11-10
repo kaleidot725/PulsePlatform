@@ -84,6 +84,45 @@ core/designsystem/…/designsystem/
 └── theme/          # PulsePlatformTheme
 ```
 
+## Desktop and mobile
+
+An app on the desktop and on mobile is two products, not one product drawn twice. A desktop window and a phone screen are used differently, and a desktop app made to match its phone app is hard to use, so the two need not have the same features or the same screens. Each product keeps its own app and features under a directory of its own, and both share the `core` modules at the root. Android and iOS are one product, as `mvi-mobile` is one artifact for both. A core module only one product uses, such as the frame of a desktop window, may sit under that product as `desktop/core/<name>`. `PulseModuleLayout.DesktopAndMobile` names this layout:
+
+```
+desktop/
+├── app/                 # the window, its navigation, the desktop's Koin modules
+├── core/designsystem/   # optional: what only the desktop draws with
+└── feature/<name>/      # host, contents and Container: the desktop view layout
+mobile/
+├── app/                 # the Android and iOS entry points, mobile's Koin modules
+└── feature/<name>/      # one screen and one ViewModel: the mobile view layout
+core/
+├── domain/              # shared by both products
+├── data/
+├── designsystem/
+└── ui/
+```
+
+### Checks for two products
+
+Passed this layout, the module checks add the three below, and a module's name starts with its product, so `desktop/feature/music` and `mobile/feature/music` are two modules. `assertPulseProductConventions()` holds each product's features to the view layout of the artifact it is built on — the desktop's to `assertPulseMviConventions()`, mobile's to `assertPulseMobileConventions()` — reading which is which from where the feature sits, so the test does not pick directories itself. Nothing checks that the two products have the same features.
+
+| Check | Rule |
+|---|---|
+| Apps and features belong to a product | every app and feature is under `desktop/` or `mobile/`; one at `feature/<name>` fails |
+| Products are independent | the desktop imports nothing from mobile, and mobile nothing from the desktop |
+| Shared modules belong to neither | a module outside both products imports from neither |
+
+```kotlin
+@Test
+fun `follows the PulsePlatform conventions of each product`() {
+    val scope = Konsist.scopeFromProduction()
+    scope.assertPulseModuleConventions(PulseModuleLayout.DesktopAndMobile)
+    scope.assertPulseKoinConventions(PulseModuleLayout.DesktopAndMobile)
+    scope.assertPulseProductConventions()
+}
+```
+
 ## Other module names
 
 The names are a `PulseModuleLayout`. Each layer is a list of path patterns matched against the end of a module's directory, with `*` standing for one directory. Layers are tried in order, so a broad `support` pattern only takes what the others left. Every module assertion, and the Koin one, takes a layout.

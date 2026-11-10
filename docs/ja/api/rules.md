@@ -156,6 +156,14 @@ fun KoScope.assertMobileFeaturePackagesHaveARole()
 
 モバイルの feature のルートより下のファイルが、すべて `section` か `component` パッケージの下にあることを要求します。`build/generated` 配下のファイルは対象外です。
 
+## assertPulseProductConventions
+
+```kotlin
+fun KoScope.assertPulseProductConventions(layout: PulseModuleLayout = PulseModuleLayout.DesktopAndMobile)
+```
+
+デスクトップのプロダクトの feature に `assertPulseMviConventions` を、モバイルのプロダクトの feature に `assertPulseMobileConventions` を実行します。どちらのプロダクトかはレイアウトから読み取ります。app、共有モジュール、どちらのプロダクトにも属さない feature はここでは検査しません。最後のものは `assertAppsAndFeaturesBelongToAProduct` が報告します。
+
 ## assertPulseDomainConventions
 
 ```kotlin
@@ -217,6 +225,9 @@ fun KoScope.assertPulseModuleConventions(layout: PulseModuleLayout = PulseModule
 | `assertDomainIsFrameworkFree(layout)` | domain は `androidx.compose`、`androidx.lifecycle`、`jp.kaleidot725.pulse.mvi`、`jp.kaleidot725.pulse.navigation`、`jp.kaleidot725.pulse.architecture` から import しない |
 | `assertDomainIsSplitIntoItsPackages(layout)` | domain のファイルは `model`・`repository`・`usecase` のどれかを含むパッケージにある |
 | `assertDataIsSplitIntoItsPackages(layout)` | data のファイルは `repository`・`local`・`model` のどれかを含むパッケージにある |
+| `assertAppsAndFeaturesBelongToAProduct(layout)` | レイアウトにプロダクトがあるとき、app と feature はすべてどちらかのプロダクトのディレクトリの下にある |
+| `assertProductsDoNotDependOnEachOther(layout)` | 一方のプロダクトのモジュールは、もう一方のプロダクトのモジュールから何も import しない |
+| `assertSharedModulesDoNotDependOnAProduct(layout)` | どちらのプロダクトにも属さないモジュールは、どちらからも import しない |
 | `assertDesignSystemIsSplitByKind(layout)` | designsystem のファイルは、モジュールのディレクトリと同じ名前のパッケージより下にあり、`component`・`widget`・`composable`・`common` のような何でも入る名前のパッケージにない |
 
 ## PulseModuleLayout
@@ -230,14 +241,19 @@ data class PulseModuleLayout(
     val sharedUi: List<String> = listOf("core/ui"),
     val support: List<String> = listOf("core/*"),
     val designSystem: List<String> = listOf("core/designsystem"),
+    val desktop: List<String> = emptyList(),
+    val mobile: List<String> = emptyList(),
 ) {
     companion object {
         val NowInAndroid: PulseModuleLayout
+        val DesktopAndMobile: PulseModuleLayout
     }
 }
 ```
 
 モジュールのディレクトリを層に対応付けます。各パターンはモジュールのディレクトリ（`src` の 1 つ上）の末尾と照合し、`*` はちょうど 1 階層を表します。層は宣言順に判定し、最初に当てはまった層に属します。末尾の `api` や `impl` は、その上の feature の一部として扱います。デフォルトは `NowInAndroid` です。
+
+`desktop` と `mobile` は 2 つのプロダクトのディレクトリを表します。層に一致した部分のすぐ上のディレクトリがどちらかのパターンに一致すると、そのモジュールはそのプロダクトに属します。`desktop/feature/music` なら、`feature/music` のすぐ上の `desktop` です。どちらにも属さないモジュールは共有モジュールで、両方のリストが空ならプロダクトは 1 つです。`DesktopAndMobile` は、`NowInAndroid` に `desktop = listOf("desktop")` と `mobile = listOf("mobile")` を加えたものです。
 
 ## pulseModule
 
@@ -245,7 +261,7 @@ data class PulseModuleLayout(
 fun KoFileDeclaration.pulseModule(layout: PulseModuleLayout = PulseModuleLayout.NowInAndroid): String?
 ```
 
-ファイルが属するモジュールの名前を、ディレクトリのうちパターンに一致した部分（`core/data` や `feature/counter`）として返します。どの層にも当てはまらない場合は null を返します。
+ファイルが属するモジュールの名前を、ディレクトリのうちパターンに一致した部分（`core/data` や `feature/counter`）として返します。プロダクトに属するモジュールは、`desktop/feature/counter` のように先頭にプロダクトのディレクトリが付きます。どの層にも当てはまらない場合は null を返します。
 
 ## assertPulseKoinConventions
 

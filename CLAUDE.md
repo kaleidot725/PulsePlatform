@@ -50,6 +50,10 @@ they store (`model`), `core/designsystem` depends on nothing so its building blo
 `core/ui` draws the domain's entities, and a feature reaches data only through the domain.
 Dependencies are read from imports.
 The module names are a `PulseModuleLayout`, which a project with names of its own replaces.
+An app on the desktop and on mobile is two products that need not match: `PulseModuleLayout.DesktopAndMobile`
+puts each product's app and features under `desktop/` and `mobile/` (`desktop/feature/<name>`), sharing `core/<name>`
+at the root. Neither product imports the other, a shared module imports neither, every app and feature sits in one,
+and `assertPulseProductConventions` holds each product's features to its own view rules.
 `assertPulseKoinConventions` uses the same layout: a Koin module (`org.koin.dsl.module` or Koin
 Annotations' `@Module`) is declared only in the app module, where the whole graph can be read;
 resolving from Koin is allowed anywhere.
@@ -141,7 +145,8 @@ PulsePlatform/
 │   │       │   ├── PulseDomainConventions.kt # assertPulseDomainConventions: how repositories hand out data
 │   │       │   ├── PulseKoinConventions.kt   # assertPulseKoinConventions: Koin modules live in the app
 │   │       │   ├── PulseModuleConventions.kt # assertPulseModuleConventions: multi-module layout
-│   │       │   ├── PulseModuleLayout.kt      # which module names play which layer
+│   │       │   ├── PulseModuleLayout.kt      # which module names play which layer, and which product
+│   │       │   ├── PulseProductConventions.kt # assertPulseProductConventions: each product's view rules
 │   │       │   └── PulseResourceConventions.kt # assertPulseResourceConventions: text comes from string resources
 │   │       └── jvmTest/…             # the checks, over conforming and violating fixtures
 │   ├── mvi-mobile/                   # :library:mvi-mobile — Android and iOS artifact: mvi-mobile
