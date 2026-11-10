@@ -1,6 +1,10 @@
 # What is PulsePlatform?
 
-PulsePlatform is a rule set and a library for building Compose UIs, made to be used by AI agents as much as by people. The rules are tests your project runs. The library holds the pieces those rules expect. Together they build desktop apps with Compose Desktop, and Android and iOS apps with Compose Multiplatform.
+PulsePlatform is a framework for building desktop and mobile apps with AI agents. Its aim is to have an agent write the right code, so that an idea takes shape as an app and keeps its shape as the app grows. It has two parts: rules, which are tests your project runs, and a library, which holds the pieces those rules expect. It is built on Compose Multiplatform, with desktop apps on the JVM and Android and iOS apps sharing their Kotlin.
+
+## From an idea to an app
+
+You describe what the app should do. The agent writes it with the library's pieces, runs the one test that holds the rules, and fixes what the failures name, until the test passes. You review an app whose code already has the agreed shape, and the next idea is built on the same shape, whoever writes it. [Building with AI agents](/guide/ai-agents) sets this loop up.
 
 ## Why rules first
 
@@ -21,7 +25,7 @@ The library is the other half. The rules ask that one place binds each ViewModel
 
 ## Desktop and mobile
 
-The rules and the core are the same on every platform: `PulseViewModel` holds one immutable state, handles actions and emits events, and `PulseContent` binds it to the UI. What differs is how many ViewModels a screen has.
+A desktop app and a mobile app built with PulsePlatform are two products, each shaped for how it is used, and they share their domain and data rather than their screens; an app on both keeps them under `desktop/` and `mobile/`, as [Desktop and mobile](/guide/rules/modules#desktop-and-mobile) describes. The rules and the core are the same on every platform: `PulseViewModel` holds one immutable state, handles actions and emits events, and `PulseContent` binds it to the UI. What differs is how many ViewModels a screen has.
 
 A desktop window shows a sidebar, an editor and an inspector at once. Each is a **content** with its own ViewModel, a **host** lays them out, and a **Container** above them carries messages between them. A phone shows one screen at a time, so a **screen** has one ViewModel and binds it itself, with no Container.
 

@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: PulsePlatform
-  text: AI エージェントが作る Compose UI のためのルールと部品
-  tagline: テストで実行するルールと、どの画面も同じ形にするライブラリ。デスクトップにも、Android と iOS にも。
+  text: AI エージェントでデスクトップアプリとモバイルアプリを作る
+  tagline: AI エージェントに適切なコードを書かせ、アイデアをアプリの形にするためのフレームワーク。技術基盤は Compose Multiplatform です。
   actions:
     - theme: brand
       text: PulsePlatform とは
@@ -17,22 +17,22 @@ hero:
       link: /ja/guide/getting-started-mobile
 
 features:
+  - icon: 💡
+    title: アイデアからアプリへ
+    details: 作りたいものを伝えれば、エージェントがデスクトップアプリ、Android と iOS のアプリ、またはその両方として作ります。コードをどこに置くかはフレームワークが決めるので、エージェントはアイデアの実現に集中できます。
+  - icon: 🤖
+    title: AI エージェントに適切なコードを
+    details: エージェントはコードを書き、1 本のテストを実行し、何をどこへ動かすかを読みます。「アーキテクチャに従って」を通すべき検査に変えるので、アプリが大きくなっても形が崩れません。
   - icon: ✅
     title: 実行できるルール
     details: UI の構成、State、Repository、モジュール間の依存、Koin、文言を、自分のテストスイートの 1 本のテストで検査します。失敗するとファイルの名前と直し方が示されます。
-  - icon: 🤖
-    title: AI エージェントのために
-    details: エージェントはコードを書き、テストを実行し、何をどこへ動かすかを読みます。「アーキテクチャに従って」を、通すべき検査に変えます。
   - icon: 🧩
     title: どの画面も同じ形に
     details: Section と Component はデータとコールバックだけを受け取り、ViewModel を結びつける場所は 1 つです。ルールが求める部品をライブラリが持っているので、正しい構成がいちばん書きやすい構成になります。
   - icon: 🪟
-    title: デスクトップのウィンドウ
-    details: ウィンドウにはいくつものパネルが同時に並びます。Content ごとに ViewModel を持ち、Container がその間で Broadcast を届け、状態を保ったまま View を作り直します。
-  - icon: 📱
-    title: Android と iOS
-    details: スマートフォンでは 1 つの画面に ViewModel が 1 つです。mvi-mobile はそれだけを持ち、Android と iOS の Compose Multiplatform で、同じルールのもとで動きます。
-  - icon: 🔁
-    title: 一方向の状態
-    details: State・Action・Event による MVI です。State は update で変わり、StateFlow として UI に届きます。どのプラットフォームでも同じです。
+    title: デスクトップとモバイルは別のプロダクト
+    details: デスクトップのウィンドウにはいくつものパネルが並び、Container がその間でメッセージを運びます。スマートフォンは 1 つの画面に ViewModel が 1 つです。両者が共有するのは domain と data で、画面は共有しません。
+  - icon: 🛠️
+    title: Compose Multiplatform が基盤
+    details: すべて Kotlin と Compose で書きます。デスクトップは JVM で、モバイルは Android と iOS で動きます。State・Action・Event による MVI で、どのプラットフォームでも状態は一方向に流れます。
 ---

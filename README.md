@@ -9,13 +9,15 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![](https://jitpack.io/v/kaleidot725/PulsePlatform.svg)](https://jitpack.io/#kaleidot725/PulsePlatform)
 
-PulsePlatform is a rule set and a library for Compose UIs that AI agents build. The **rules** are
-tests your project runs: they check how each feature is split, how state and messages are declared,
-how repositories hand out data, which module depends on which, and where the text comes from. A
-failure names the file and says what to move where, so an agent fixes it the way it fixes a compile
-error. The **library** holds the pieces the rules expect, so the right structure is also the easy one
-to write. It builds desktop apps with Compose Desktop, and Android and iOS apps with Compose
-Multiplatform.
+PulsePlatform is a framework for building desktop and mobile apps with AI agents. You bring the
+idea, an agent writes the app, and PulsePlatform keeps the code it writes the right code, so the idea
+takes shape as an app that still holds together as it grows. Its **rules** are tests your project
+runs: they check how each feature is split, how state and messages are declared, how repositories
+hand out data, which module depends on which, and where the text comes from. A failure names the
+file and says what to move where, so the agent fixes it the way it fixes a compile error. Its
+**library** holds the pieces the rules expect, so the right structure is also the easy one to write.
+It is built on Compose Multiplatform: desktop apps run on the JVM, and Android and iOS apps share
+their Kotlin.
 
 Read [What is PulsePlatform?](https://kaleidot725.github.io/PulsePlatform/guide/) for the idea behind it.
 
@@ -23,7 +25,8 @@ Read [What is PulsePlatform?](https://kaleidot725.github.io/PulsePlatform/guide/
 
 ## What you get
 
-Use the rules on every platform, and the MVI artifact for your target. A desktop window shows
+A desktop app and a mobile app are two products, each shaped for how it is used. Use the rules on
+every platform, and the MVI artifact for your target. A desktop window shows
 several panels at once, so a feature is a **host** that lays out **contents**, each binding its own
 ViewModel, with a **Container** carrying messages between them. A phone shows one screen at a time,
 so a mobile feature is one **screen** binding one ViewModel. On both, **sections** and

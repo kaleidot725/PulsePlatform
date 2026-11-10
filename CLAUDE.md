@@ -4,8 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PulsePlatform is a rule set and a library for Compose UIs that AI agents build, on the desktop and
-on Android and iOS. The rules (the `architecture` artifact) are Konsist assertions an app runs from
+PulsePlatform is a framework for building desktop and mobile apps with AI agents: it keeps an agent
+writing the right code so an idea takes shape as an app, and it is built on Compose Multiplatform. The rules (the `architecture` artifact) are Konsist assertions an app runs from
 its own tests, and their failure messages say what to move where; the library (`mvi-desktop`, `mvi-mobile`,
 `navigation-desktop`, `navigation-mobile`) holds the MVI pieces those rules expect. The docs present the rules first and the
 library second.
