@@ -84,6 +84,45 @@ core/designsystem/…/designsystem/
 └── theme/          # PulsePlatformTheme
 ```
 
+## デスクトップとモバイル
+
+デスクトップとモバイルの両方に出すアプリは、1 つのプロダクトを 2 回描いたものではなく、2 つのプロダクトです。デスクトップのウィンドウとスマートフォンの画面は使われ方が違い、スマートフォン版に合わせたデスクトップ版は使いにくくなります。そのため、2 つの機能や画面がそろっている必要はありません。プロダクトごとに app と feature を自分のディレクトリの下に持ち、ルートの `core` モジュールを両方で共有します。`mvi-mobile` が両方に向けた 1 つのアーティファクトなので、Android と iOS は 1 つのプロダクトです。デスクトップのウィンドウの枠のように片方のプロダクトだけが使う core モジュールは、そのプロダクトの下に `desktop/core/<name>` として置けます。この構成を表すのが `PulseModuleLayout.DesktopAndMobile` です。
+
+```
+desktop/
+├── app/                 # ウィンドウ、ナビゲーション、デスクトップの Koin モジュール
+├── core/designsystem/   # 任意：デスクトップだけが使う部品
+└── feature/<name>/      # Host・Content・Container：デスクトップの画面構成
+mobile/
+├── app/                 # Android と iOS の入口、モバイルの Koin モジュール
+└── feature/<name>/      # Screen 1 つと ViewModel 1 つ：モバイルの画面構成
+core/
+├── domain/              # 両方のプロダクトで共有
+├── data/
+├── designsystem/
+└── ui/
+```
+
+### 2 つのプロダクトの検査
+
+このレイアウトを渡すと、モジュールの検査に次の 3 つが加わります。モジュール名の先頭にはプロダクト名が付くので、`desktop/feature/music` と `mobile/feature/music` は別のモジュールです。`assertPulseProductConventions()` は、各プロダクトの feature を、そのプロダクトが使うアーティファクトの画面構成で検査します。デスクトップの feature は `assertPulseMviConventions()`、モバイルの feature は `assertPulseMobileConventions()` です。どちらに当たるかは feature の置き場所から読み取るので、テストの側でディレクトリを選ぶ必要はありません。2 つのプロダクトに同じ feature があるかは検査しません。
+
+| 検査 | ルール |
+|---|---|
+| app と feature はプロダクトに属する | app と feature はすべて `desktop/` か `mobile/` の下にある。`feature/<name>` に置くと失敗する |
+| プロダクトは互いに独立している | デスクトップはモバイルから、モバイルはデスクトップから何も import しない |
+| 共有モジュールはどちらにも属さない | どちらのプロダクトにも属さないモジュールは、どちらからも import しない |
+
+```kotlin
+@Test
+fun `follows the PulsePlatform conventions of each product`() {
+    val scope = Konsist.scopeFromProduction()
+    scope.assertPulseModuleConventions(PulseModuleLayout.DesktopAndMobile)
+    scope.assertPulseKoinConventions(PulseModuleLayout.DesktopAndMobile)
+    scope.assertPulseProductConventions()
+}
+```
+
 ## 別のモジュール名
 
 モジュール名は `PulseModuleLayout` で決まります。層ごとにパスのパターンを並べ、モジュールのディレクトリの末尾と照合します。`*` は 1 階層を表します。層は順に判定するので、`support` の広いパターンは、ほかの層が取らなかったモジュールだけを拾います。モジュールの検査と Koin の検査は、すべてレイアウトを受け取ります。

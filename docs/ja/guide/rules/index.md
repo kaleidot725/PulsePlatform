@@ -10,6 +10,7 @@
 |---|---|---|
 | `assertPulseMviConventions()` | デスクトップの feature を Host・Content・Section・Component に分けること、State とメッセージ、Preview | [UI の構成](/ja/guide/rules/ui) |
 | `assertPulseMobileConventions()` | モバイルの feature を Screen 1 つと ViewModel 1 つにすること、State とメッセージ、Preview | [UI の構成](/ja/guide/rules/ui#モバイル) |
+| `assertPulseProductConventions()` | デスクトップとモバイルの両方に出すアプリで、各プロダクトの feature をそれぞれの画面構成で検査する | [モジュールと Koin](/ja/guide/rules/modules#デスクトップとモバイル) |
 | `assertPulseDomainConventions()` | Repository がデータをどう公開するか、UseCase を作ってよいのはどんなときか | [ドメインとデータ](/ja/guide/rules/domain) |
 | `assertPulseModuleConventions()` | どのモジュールがどのモジュールに依存してよいか、domain・data・デザインシステムの中のパッケージ | [モジュールと Koin](/ja/guide/rules/modules) |
 | `assertPulseKoinConventions()` | Koin のモジュールをどこで定義するか | [モジュールと Koin](/ja/guide/rules/modules#koin) |
