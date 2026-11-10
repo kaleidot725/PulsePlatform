@@ -43,4 +43,26 @@ class PulseModuleLayoutTest {
         assertEquals("features/shop", layout.moduleOf("/repo/features/shop/api"))
         assertEquals(ModuleLayer.Feature, layout.layerOf("/repo/features/shop/impl"))
     }
+
+    /**
+     * Under a layout with products, the product's directory sits directly above the matched part and comes first in the
+     * name, while a module outside both is shared.
+     */
+    @Test
+    fun `names a module after its product when the layout has products`() {
+        val layout = PulseModuleLayout.DesktopAndMobile
+
+        assertEquals("desktop/feature/music", layout.moduleOf("/repo/desktop/feature/music"))
+        assertEquals(ModuleProduct.Desktop, layout.productOf("/repo/desktop/feature/music"))
+        assertEquals("mobile/app", layout.moduleOf("/repo/mobile/app"))
+        assertEquals(ModuleProduct.Mobile, layout.productOf("/repo/mobile/app"))
+        assertEquals("core/domain", layout.moduleOf("/repo/core/domain"))
+        assertNull(layout.productOf("/repo/core/domain"))
+    }
+
+    /** A product's name further up the path, such as a checkout directory, does not make a shared module its own. */
+    @Test
+    fun `reads the product only from the directory directly above the module`() {
+        assertNull(PulseModuleLayout.DesktopAndMobile.productOf("/home/desktop/repo/core/data"))
+    }
 }

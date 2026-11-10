@@ -23,6 +23,10 @@ import com.lemonappdev.konsist.api.verify.assertTrue
  * through the domain and `app` hands it the implementation. Inside the domain and the data layer, the package says what a
  * declaration is, so a reader finds the repository interfaces in one place and the data sources in another.
  *
+ * An app on the desktop and on mobile is two products, each with its own app and features under `desktop` and `mobile`,
+ * sharing the `core` modules at the root. Under [PulseModuleLayout.DesktopAndMobile] neither product imports the other,
+ * the shared modules import neither, and every app and feature sits inside one of them.
+ *
  * The names are a [PulseModuleLayout], which a project with names of its own replaces. Dependencies are read from
  * imports, so what is checked is the code that is actually used.
  *
@@ -48,6 +52,58 @@ public fun KoScope.assertPulseModuleConventions(layout: PulseModuleLayout = Puls
     assertDomainIsSplitIntoItsPackages(layout)
     assertDataIsSplitIntoItsPackages(layout)
     assertDesignSystemIsSplitByKind(layout)
+    assertAppsAndFeaturesBelongToAProduct(layout)
+    assertProductsDoNotDependOnEachOther(layout)
+    assertSharedModulesDoNotDependOnAProduct(layout)
+}
+
+/**
+ * Every app and every feature sits under a product's directory, `desktop/feature/<name>` rather than `feature/<name>`,
+ * when the layout splits the project into products.
+ *
+ * Where a feature goes is then decided by which product it is for, and the reader finds the desktop's features in one
+ * place. A feature outside both belongs to neither, and no rule knows whether to hold it to the desktop's layout or the
+ * mobile one. A layout without products has nothing to check.
+ */
+public fun KoScope.assertAppsAndFeaturesBelongToAProduct(layout: PulseModuleLayout = PulseModuleLayout.NowInAndroid) {
+    if (!layout.hasProducts) return
+    files
+        .filter { it.layerIn(layout) == ModuleLayer.App || it.layerIn(layout) == ModuleLayer.Feature }
+        .assertTrue(
+            testName = "apps and features belong to a product",
+            additionalMessage = "Move the module under the product it is for, such as desktop/feature/<name> or mobile/app.",
+        ) { it.productIn(layout) != null }
+}
+
+/**
+ * Neither product depends on the other: the desktop's modules import nothing from the mobile ones, and the mobile ones
+ * nothing from the desktop's.
+ *
+ * The two are separate products, shaped for how each is used, so one changes without the other following. What both
+ * need — the entities, the repositories, a shared theme — lives in a shared `core` module.
+ */
+public fun KoScope.assertProductsDoNotDependOnEachOther(layout: PulseModuleLayout = PulseModuleLayout.NowInAndroid) {
+    assertModuleDependencies(
+        layout = layout,
+        testName = "products do not depend on each other",
+        additionalMessage = "Move what both products need into a shared core module.",
+        checks = { it.product != null },
+        allows = { from, to -> to.product == null || to.product == from.product },
+    )
+}
+
+/**
+ * A module both products share depends on neither of them, so it works the same under either and does not drag one
+ * product's code into the other.
+ */
+public fun KoScope.assertSharedModulesDoNotDependOnAProduct(layout: PulseModuleLayout = PulseModuleLayout.NowInAndroid) {
+    assertModuleDependencies(
+        layout = layout,
+        testName = "shared modules do not depend on a product",
+        additionalMessage = "Move the code into the product that needs it, or move what it uses into a shared core module.",
+        checks = { it.product == null },
+        allows = { _, to -> to.product == null },
+    )
 }
 
 /** No module depends on the app: the application sits on top and wires everything else together. */
@@ -232,6 +288,13 @@ public fun KoFileDeclaration.pulseModule(layout: PulseModuleLayout = PulseModule
 
 internal enum class ModuleLayer { App, Feature, Domain, Data, DesignSystem, SharedUi, Support }
 
+/** A module as the layout reads it: its name, its layer, and the product it belongs to, if any. */
+private data class LaidOutModule(
+    val name: String,
+    val layer: ModuleLayer,
+    val product: ModuleProduct?,
+)
+
 private val domainPackages = listOf("model", "repository", "usecase")
 
 private val dataPackages = listOf("repository", "local", "model")
@@ -276,37 +339,65 @@ private fun KoScope.assertModuleDependencies(
     checks: (ModuleLayer) -> Boolean,
     allows: (ModuleLayer) -> Boolean,
 ) {
+    assertModuleDependencies(
+        layout = layout,
+        testName = testName,
+        additionalMessage = additionalMessage,
+        checks = { checks(it.layer) },
+        allows = { _, to -> allows(to.layer) },
+    )
+}
+
+@JvmName("assertLaidOutModuleDependencies")
+private fun KoScope.assertModuleDependencies(
+    layout: PulseModuleLayout,
+    testName: String,
+    additionalMessage: String,
+    checks: (LaidOutModule) -> Boolean,
+    allows: (from: LaidOutModule, to: LaidOutModule) -> Boolean,
+) {
     val packages = packageIndex(layout)
     files
-        .filter { file -> file.layerIn(layout)?.let(checks) == true }
+        .mapNotNull { file -> file.laidOutIn(layout)?.let { file to it } }
+        .filter { (_, module) -> checks(module) }
+        .map { (file, _) -> file }
         .assertTrue(testName = testName, additionalMessage = additionalMessage) { file ->
-            file.moduleDependencies(packages, own = file.pulseModule(layout)).all { (_, layer) -> allows(layer) }
+            val own = file.laidOutIn(layout) ?: return@assertTrue true
+            file.moduleDependencies(packages, own = own.name).all { allows(own, it) }
         }
 }
 
-/** Every package in the scope, mapped to the module that declares it and that module's layer. */
-private fun KoScope.packageIndex(layout: PulseModuleLayout): Map<String, Pair<String, ModuleLayer>> =
+/** Every package in the scope, mapped to the module that declares it. */
+private fun KoScope.packageIndex(layout: PulseModuleLayout): Map<String, LaidOutModule> =
     files
         .mapNotNull { file ->
-            val module = file.pulseModule(layout) ?: return@mapNotNull null
-            val layer = file.layerIn(layout) ?: return@mapNotNull null
-            file.packagee?.name?.let { it to (module to layer) }
+            val module = file.laidOutIn(layout) ?: return@mapNotNull null
+            file.packagee?.name?.let { it to module }
         }.toMap()
 
 /** The other modules this file imports from, found by the longest package that prefixes each import. */
 private fun KoFileDeclaration.moduleDependencies(
-    packages: Map<String, Pair<String, ModuleLayer>>,
-    own: String?,
-): Set<Pair<String, ModuleLayer>> =
+    packages: Map<String, LaidOutModule>,
+    own: String,
+): Set<LaidOutModule> =
     imports
         .mapNotNull { import ->
             generateSequence(import.name) { it.substringBeforeLast('.', "").ifEmpty { null } }
                 .firstNotNullOfOrNull(packages::get)
-        }.filter { (module, _) -> module != own }
+        }.filter { it.name != own }
         .toSet()
+
+private fun KoFileDeclaration.laidOutIn(layout: PulseModuleLayout): LaidOutModule? {
+    val name = pulseModule(layout) ?: return null
+    val layer = layerIn(layout) ?: return null
+    return LaidOutModule(name, layer, productIn(layout))
+}
 
 /** The layer is read from the directory, so it holds even for a feature named after a trimmed `api` or `impl`. */
 internal fun KoFileDeclaration.layerIn(layout: PulseModuleLayout): ModuleLayer? = layout.layerOf(moduleDirectory)
+
+/** The product whose directory the module sits under, or null for a module both products share. */
+internal fun KoFileDeclaration.productIn(layout: PulseModuleLayout): ModuleProduct? = layout.productOf(moduleDirectory)
 
 /** The directory above the last `src`, where Gradle keeps a module's sources. */
 private val KoFileDeclaration.moduleDirectory: String
