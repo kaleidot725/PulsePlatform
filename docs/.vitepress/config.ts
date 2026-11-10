@@ -15,7 +15,7 @@ export default withMermaid(defineConfig({
     root: {
       label: 'English',
       lang: 'en',
-      description: 'Rules and building blocks for Compose UIs that AI agents build, on the desktop, Android and iOS',
+      description: 'A framework for building desktop and mobile apps with AI agents, on Compose Multiplatform',
       themeConfig: {
         nav: [
           { text: 'Guide', link: '/guide/', activeMatch: '/guide/' },
@@ -115,7 +115,7 @@ export default withMermaid(defineConfig({
       label: '日本語',
       lang: 'ja',
       link: '/ja/',
-      description: 'AI エージェントが作る Compose UI のためのルールと部品。デスクトップ、Android、iOS に対応',
+      description: 'AI エージェントでデスクトップアプリとモバイルアプリを作るためのフレームワーク。Compose Multiplatform を利用',
       themeConfig: {
         nav: [
           { text: 'ガイド', link: '/ja/guide/', activeMatch: '/ja/guide/' },
